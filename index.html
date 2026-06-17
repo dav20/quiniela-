@@ -1,0 +1,768 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Quiniela Mundial 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 { text-align: center; font-size: 26px; color: #fff; margin-bottom: 6px; }
+  .subtitle { text-align: center; color: #94a3b8; font-size: 13px; margin-bottom: 24px; }
+
+  /* Auth Section */
+  .auth-container {
+    max-width: 400px;
+    margin: 60px auto;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .auth-container h2 { color: #fff; font-size: 20px; margin-bottom: 20px; text-align: center; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: #6366f1; }
+  .btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
+  .btn-secondary { background: rgba(255,255,255,0.1); margin-top: 12px; }
+  .error-msg { color: #f87171; font-size: 12px; margin-top: 8px; text-align: center; display: none; }
+  .success-msg { color: #4ade80; font-size: 12px; margin-top: 8px; text-align: center; display: none; }
+
+  /* App Container */
+  .app-container { max-width: 800px; margin: 0 auto; display: none; }
+  .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .user-info { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: #fff;
+  }
+  .user-name { font-size: 14px; color: #fff; font-weight: 500; }
+  .logout-btn {
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .logout-btn:hover { background: rgba(239,68,68,0.2); color: #f87171; border-color: rgba(239,68,68,0.3); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+  .tab {
+    flex: 1; padding: 10px; text-align: center; border-radius: 8px;
+    font-size: 13px; font-weight: 500; color: #94a3b8; cursor: pointer; transition: all 0.2s;
+  }
+  .tab:hover { color: #fff; }
+  .tab.active { background: rgba(99,102,241,0.3); color: #fff; font-weight: 600; }
+
+  /* Panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Leaderboard */
+  .leaderboard-table {
+    width: 100%; border-collapse: collapse;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .leaderboard-table thead th {
+    background: rgba(255,255,255,0.06); padding: 12px 14px; text-align: left;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600;
+  }
+  .leaderboard-table tbody td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+  .leaderboard-table tbody tr:hover td { background: rgba(99,102,241,0.08); }
+  .rank { font-weight: 700; font-family: monospace; font-size: 15px; }
+  .rank-1 { color: #fbbf24; }
+  .rank-2 { color: #94a3b8; }
+  .points { font-weight: 700; font-family: monospace; color: #a78bfa; }
+  .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-family: monospace; }
+  .badge-exact { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .badge-winner { background: rgba(59,130,246,0.15); color: #60a5fa; }
+
+  /* Matches / Predictions */
+  .match-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .match-card:hover { border-color: rgba(99,102,241,0.3); }
+  .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .match-date { font-size: 11px; color: #64748b; }
+  .match-status { font-size: 11px; padding: 3px 8px; border-radius: 4px; }
+  .status-open { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .status-locked { background: rgba(239,68,68,0.15); color: #f87171; }
+  .status-finished { background: rgba(148,163,184,0.15); color: #94a3b8; }
+  .match-teams { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 12px; }
+  .team { text-align: center; min-width: 80px; }
+  .team-flag { font-size: 28px; margin-bottom: 4px; }
+  .team-name { font-size: 12px; color: #cbd5e1; font-weight: 500; }
+  .vs { color: #475569; font-size: 12px; font-weight: 600; }
+  .prediction-inputs { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .score-input {
+    width: 48px; height: 40px; text-align: center;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; color: #fff; font-size: 18px; font-weight: 700; font-family: monospace;
+    outline: none; transition: border-color 0.2s;
+  }
+  .score-input:focus { border-color: #6366f1; }
+  .score-separator { color: #475569; font-size: 18px; font-weight: 700; }
+  .save-prediction { margin-top: 10px; display: flex; justify-content: center; }
+  .btn-save {
+    padding: 6px 16px; background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 6px; color: #a78bfa; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-save:hover { background: rgba(99,102,241,0.4); }
+  .result-display { text-align: center; margin-top: 8px; font-size: 12px; color: #94a3b8; }
+  .points-earned { color: #4ade80; font-weight: 600; }
+
+  /* Profile */
+  .profile-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+  }
+  .profile-avatar {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 50%; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: 700; color: #fff;
+  }
+  .profile-name { font-size: 20px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .profile-email { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+  .profile-stats { display: flex; justify-content: center; gap: 32px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 24px; font-weight: 700; color: #a78bfa; font-family: monospace; }
+  .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+
+  /* Champion Pick */
+  .champion-section {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .champion-section h3 { color: #fff; font-size: 16px; margin-bottom: 12px; }
+  .champion-select {
+    padding: 10px 16px; background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+    color: #fff; font-size: 14px; outline: none; min-width: 200px;
+  }
+  .champion-select option { background: #1a1a2e; color: #fff; }
+  .champion-locked { color: #f87171; font-size: 12px; margin-top: 8px; }
+
+  /* Error banner */
+  .error-banner {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #f87171;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* Loading */
+  .loading { text-align: center; padding: 40px; color: #64748b; }
+  .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid rgba(99,102,241,0.3); border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    .match-teams { gap: 10px; }
+    .team { min-width: 60px; }
+    .profile-stats { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>⚽ Quiniela Mundial 2026</h1>
+<p class="subtitle">Predice los resultados de la Copa del Mundo FIFA 2026 🇺🇸🇲🇽🇨🇦</p>
+
+<!-- SECCIÓN DE AUTENTICACIÓN -->
+<div class="auth-container" id="authSection">
+  <h2 id="authTitle">Iniciar Sesión</h2>
+  <div class="form-group">
+    <label>Correo electrónico</label>
+    <input type="email" id="emailInput" placeholder="tu@correo.com">
+  </div>
+  <div class="form-group">
+    <label>Contraseña</label>
+    <input type="password" id="passwordInput" placeholder="••••••••">
+  </div>
+  <div class="form-group" id="nameGroup" style="display:none;">
+    <label>Nombre</label>
+    <input type="text" id="nameInput" placeholder="Tu nombre">
+  </div>
+  <button class="btn" id="authBtn" onclick="handleAuth()">Iniciar Sesión</button>
+  <button class="btn btn-secondary" id="toggleAuthBtn" onclick="toggleAuthMode()">¿No tenés cuenta? Registrate</button>
+  <p class="error-msg" id="authError"></p>
+  <p class="success-msg" id="authSuccess"></p>
+</div>
+
+<!-- APP PRINCIPAL -->
+<div class="app-container" id="appContainer">
+  <div class="app-header">
+    <div class="user-info">
+      <div class="avatar" id="userAvatar">D</div>
+      <span class="user-name" id="userName">David</span>
+    </div>
+    <button class="logout-btn" onclick="handleLogout()">Cerrar Sesión</button>
+  </div>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="leaderboard" onclick="switchTab('leaderboard', this)">🏆 Tabla</div>
+    <div class="tab" data-tab="matches" onclick="switchTab('matches', this)">⚽ Partidos</div>
+    <div class="tab" data-tab="profile" onclick="switchTab('profile', this)">👤 Perfil</div>
+  </div>
+
+  <!-- PANEL TABLA DE POSICIONES -->
+  <div class="panel active" id="panel-leaderboard">
+    <table class="leaderboard-table">
+      <thead>
+        <tr><th>#</th><th>Jugador</th><th>Puntos</th><th>Exactos</th><th>Aciertos</th></tr>
+      </thead>
+      <tbody id="leaderboardBody">
+        <tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PANEL PARTIDOS -->
+  <div class="panel" id="panel-matches">
+    <div id="matchesList">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- PANEL PERFIL -->
+  <div class="panel" id="panel-profile">
+    <div class="profile-card">
+      <div class="profile-avatar" id="profileAvatar">D</div>
+      <div class="profile-name" id="profileName">David</div>
+      <div class="profile-email" id="profileEmail">david@correo.com</div>
+      <div class="profile-stats">
+        <div class="stat">
+          <div class="stat-value" id="statPoints">0</div>
+          <div class="stat-label">Puntos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statExact">0</div>
+          <div class="stat-label">Exactos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statCorrect">0</div>
+          <div class="stat-label">Aciertos</div>
+        </div>
+      </div>
+    </div>
+    <div class="champion-section">
+      <h3>🌟 Campeón del Mundo (10 pts)</h3>
+      <select class="champion-select" id="championSelect" onchange="saveChampionPick()">
+        <option value="">Elegí un equipo...</option>
+        <option value="Argentina">🇦🇷 Argentina</option>
+        <option value="Brasil">🇧🇷 Brasil</option>
+        <option value="Francia">🇫🇷 Francia</option>
+        <option value="Alemania">🇩🇪 Alemania</option>
+        <option value="Inglaterra">🏴 Inglaterra</option>
+        <option value="España">🇪🇸 España</option>
+        <option value="Portugal">🇵🇹 Portugal</option>
+        <option value="Países Bajos">🇳🇱 Países Bajos</option>
+        <option value="Bélgica">🇧🇪 Bélgica</option>
+        <option value="Italia">🇮🇹 Italia</option>
+        <option value="México">🇲🇽 México</option>
+        <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
+        <option value="Uruguay">🇺🇾 Uruguay</option>
+        <option value="Colombia">🇨🇴 Colombia</option>
+        <option value="Japón">🇯🇵 Japón</option>
+        <option value="Corea del Sur">🇰🇷 Corea del Sur</option>
+        <option value="Costa Rica">🇨🇷 Costa Rica</option>
+        <option value="Croacia">🇭🇷 Croacia</option>
+      </select>
+      <div class="champion-locked" id="championLockMsg" style="display:none;">🔒 La elección de campeón está bloqueada (el torneo ya inició)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// 🔧 CONFIGURACIÓN — REEMPLAZÁ CON TUS VALORES
+// ============================================
+const SUPABASE_URL = 'https://ztngxhnhbakncgdlusjx.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_xKNN833icDG7-yMTHnjP_A_tpQONKXp';
+
+// Fecha de bloqueo del campeón (no se puede cambiar después)
+const CHAMPION_LOCK_DATE = new Date('2026-06-24T00:00:00Z');
+
+// ============================================
+// Cliente Supabase (ligero, sin SDK)
+// ============================================
+let currentUser = null;
+let currentProfile = null;
+let isSignUp = false;
+let accessToken = null;
+let refreshToken = null;
+
+async function supabaseRequest(endpoint, options = {}) {
+  const url = `${SUPABASE_URL}${endpoint}`;
+  const token = options.token || accessToken || SUPABASE_ANON_KEY;
+  const headers = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${token}`,
+    ...options.headers
+  };
+  
+  try {
+    const res = await fetch(url, { ...options, headers });
+    
+    if (res.status === 401 && refreshToken) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+        const retryRes = await fetch(url, { ...options, headers });
+        return retryRes.json();
+      } else {
+        handleLogout();
+        return null;
+      }
+    }
+    
+    if (res.status === 401 && !refreshToken) {
+      handleLogout();
+      return null;
+    }
+    
+    return res.json();
+  } catch (err) {
+    console.error('Error de API:', err);
+    showErrorBanner('Error de conexión. Revisá tu internet.');
+    return null;
+  }
+}
+
+async function refreshAccessToken() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      accessToken = data.access_token;
+      refreshToken = data.refresh_token;
+      localStorage.setItem('supabase_token', accessToken);
+      localStorage.setItem('supabase_refresh_token', refreshToken);
+      return true;
+    }
+    return false;
+  } catch (err) {
+    return false;
+  }
+}
+
+// ============================================
+// FUNCIONES DE AUTENTICACIÓN
+// ============================================
+function toggleAuthMode() {
+  isSignUp = !isSignUp;
+  document.getElementById('authTitle').textContent = isSignUp ? 'Crear Cuenta' : 'Iniciar Sesión';
+  document.getElementById('authBtn').textContent = isSignUp ? 'Registrarse' : 'Iniciar Sesión';
+  document.getElementById('toggleAuthBtn').textContent = isSignUp
+    ? '¿Ya tenés cuenta? Iniciá sesión'
+    : '¿No tenés cuenta? Registrate';
+  document.getElementById('nameGroup').style.display = isSignUp ? 'block' : 'none';
+  hideMessages();
+}
+
+async function handleAuth() {
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const name = document.getElementById('nameInput').value.trim();
+  hideMessages();
+
+  if (!email || !password) return showError('Por favor completá todos los campos');
+  if (isSignUp && !name) return showError('Por favor ingresá tu nombre');
+
+  try {
+    if (isSignUp) {
+      const data = await supabaseRequest('/auth/v1/signup', {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+          password,
+          data: { display_name: name }
+        })
+      });
+
+      if (!data) return showError('Error de conexión. Intentá de nuevo.');
+      if (data.error) return showError(data.error.message || data.msg);
+
+      showSuccess('¡Cuenta creada! Revisá tu correo para confirmar y luego iniciá sesión.');
+      return;
+    }
+
+    const data = await supabaseRequest('/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!data) return showError('Error de conexión. Intentá de nuevo.');
+    if (data.error) return showError(data.error.message || data.msg);
+
+    accessToken = data.access_token;
+    refreshToken = data.refresh_token;
+    localStorage.setItem('supabase_token', accessToken);
+    localStorage.setItem('supabase_refresh_token', refreshToken);
+    localStorage.setItem('supabase_user', JSON.stringify(data.user));
+    currentUser = data.user;
+    await loadApp();
+  } catch (err) {
+    showError('Error de conexión. Intentá de nuevo.');
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('supabase_token');
+  localStorage.removeItem('supabase_refresh_token');
+  localStorage.removeItem('supabase_user');
+  currentUser = null;
+  currentProfile = null;
+  accessToken = null;
+  refreshToken = null;
+  document.getElementById('appContainer').style.display = 'none';
+  document.getElementById('authSection').style.display = 'block';
+}
+
+// ============================================
+// FUNCIONES DE LA APP
+// ============================================
+async function loadApp() {
+  document.getElementById('authSection').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'block';
+
+  await loadProfile();
+  await loadLeaderboard();
+  await loadMatches();
+  checkChampionLock();
+
+  setInterval(loadLeaderboard, 30000);
+}
+
+async function loadProfile() {
+  try {
+    const data = await supabaseRequest(
+      `/rest/v1/profiles?id=eq.${currentUser.id}&select=*`
+    );
+
+    if (data && data.length > 0) {
+      currentProfile = data[0];
+      const initials = currentProfile.display_name.charAt(0).toUpperCase();
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('userName').textContent = currentProfile.display_name;
+      document.getElementById('profileAvatar').textContent = initials;
+      document.getElementById('profileName').textContent = currentProfile.display_name;
+      document.getElementById('profileEmail').textContent = currentProfile.email;
+      if (currentProfile.champion_pick) {
+        document.getElementById('championSelect').value = currentProfile.champion_pick;
+      }
+    }
+  } catch (err) {
+    showErrorBanner('No se pudo cargar el perfil.');
+  }
+}
+
+async function loadLeaderboard() {
+  try {
+    const data = await supabaseRequest(
+      '/rest/v1/leaderboard_view?select=*&order=total_points.desc'
+    );
+
+    const tbody = document.getElementById('leaderboardBody');
+    
+    if (!data || data.error) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#f87171;">No se pudo cargar la tabla.</td></tr>';
+      return;
+    }
+    
+    if (data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#64748b;">Aún no hay predicciones. ¡Sé el primero!</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map((player, i) => `
+      <tr>
+        <td class="rank ${i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : ''}">${i + 1}</td>
+        <td style="color:#fff;font-weight:500;">${escapeHtml(player.display_name)}</td>
+        <td class="points">${player.total_points || 0}</td>
+        <td><span class="badge badge-exact">${player.exact_count || 0}</span></td>
+        <td><span class="badge badge-winner">${player.correct_count || 0}</span></td>
+      </tr>
+    `).join('');
+
+    const myStats = data.find(p => p.user_id === currentUser.id);
+    if (myStats) {
+      document.getElementById('statPoints').textContent = myStats.total_points || 0;
+      document.getElementById('statExact').textContent = myStats.exact_count || 0;
+      document.getElementById('statCorrect').textContent = myStats.correct_count || 0;
+    }
+  } catch (err) {
+    document.getElementById('leaderboardBody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:#f87171;">Error al cargar la tabla.</td></tr>';
+  }
+}
+
+async function loadMatches() {
+  try {
+    const matches = await supabaseRequest(
+      '/rest/v1/matches?select=*&order=match_date.asc'
+    );
+
+    const predictions = await supabaseRequest(
+      `/rest/v1/predictions?user_id=eq.${currentUser.id}&select=*`
+    );
+
+    const predMap = {};
+    if (predictions && Array.isArray(predictions)) {
+      predictions.forEach(p => { predMap[p.match_id] = p; });
+    }
+
+    const container = document.getElementById('matchesList');
+    
+    if (!matches || !Array.isArray(matches) || matches.length === 0) {
+      container.innerHTML = '<p style="text-align:center;color:#64748b;padding:20px;">No hay partidos programados aún.</p>';
+      return;
+    }
+
+    container.innerHTML = matches.map(match => {
+      const pred = predMap[match.id];
+      const now = new Date();
+      const matchDate = new Date(match.match_date);
+      const lockTime = new Date(matchDate.getTime() - 60 * 60 * 1000);
+      const isLocked = now >= lockTime;
+      const isFinished = match.home_score !== null && match.away_score !== null;
+
+      let statusClass = 'status-open';
+      let statusText = 'Abierto';
+      if (isFinished) { statusClass = 'status-finished'; statusText = 'Final'; }
+      else if (isLocked) { statusClass = 'status-locked'; statusText = 'Cerrado'; }
+
+      let resultHtml = '';
+      if (isFinished) {
+        resultHtml = `<div class="result-display">Final: ${match.home_score} - ${match.away_score}`;
+        if (pred) {
+          const pts = calculatePoints(pred.home_score, pred.away_score, match.home_score, match.away_score);
+          if (pts > 0) resultHtml += ` | <span class="points-earned">+${pts} pts</span>`;
+          else resultHtml += ` | +0 pts`;
+        }
+        resultHtml += '</div>';
+      }
+
+      return `
+        <div class="match-card">
+          <div class="match-header">
+            <span class="match-date">${formatDate(match.match_date)}</span>
+            <span class="match-status ${statusClass}">${statusText}</span>
+          </div>
+          <div class="match-teams">
+            <div class="team">
+              <div class="team-flag">${match.home_flag || '🏳️'}</div>
+              <div class="team-name">${escapeHtml(match.home_team)}</div>
+            </div>
+            <span class="vs">VS</span>
+            <div class="team">
+              <div class="team-flag">${match.away_flag || '🏳️'}</div>
+              <div class="team-name">${escapeHtml(match.away_team)}</div>
+            </div>
+          </div>
+          <div class="prediction-inputs">
+            <input type="number" class="score-input" id="home-${match.id}" min="0" max="20" step="1"
+              value="${pred ? pred.home_score : ''}" ${isLocked ? 'disabled' : ''}
+              onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+            <span class="score-separator">-</span>
+            <input type="number" class="score-input" id="away-${match.id}" min="0" max="20" step="1"
+              value="${pred ? pred.away_score : ''}" ${isLocked ? 'disabled' : ''}
+              onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+          </div>
+          ${!isLocked ? `<div class="save-prediction"><button class="btn-save" onclick="savePrediction('${match.id}', this)">Guardar Predicción</button></div>` : ''}
+          ${resultHtml}
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    document.getElementById('matchesList').innerHTML = '<p style="text-align:center;color:#f87171;padding:20px;">Error al cargar los partidos.</p>';
+  }
+}
+
+async function savePrediction(matchId, btnElement) {
+  const homeScore = document.getElementById(`home-${matchId}`).value;
+  const awayScore = document.getElementById(`away-${matchId}`).value;
+  
+  const homeInt = parseInt(homeScore);
+  const awayInt = parseInt(awayScore);
+  if (isNaN(homeInt) || isNaN(awayInt) || homeInt < 0 || awayInt < 0) {
+    alert('Por favor ingresá marcadores válidos (0 o más)');
+    return;
+  }
+
+  const result = await supabaseRequest('/rest/v1/predictions?on_conflict=user_id,match_id', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({
+      user_id: currentUser.id,
+      match_id: matchId,
+      home_score: homeInt,
+      away_score: awayInt
+    })
+  });
+
+  if (btnElement) {
+    btnElement.textContent = '✓ ¡Guardado!';
+    btnElement.style.color = '#4ade80';
+    setTimeout(() => { btnElement.textContent = 'Guardar Predicción'; btnElement.style.color = ''; }, 2000);
+  }
+}
+
+function checkChampionLock() {
+  const now = new Date();
+  if (now >= CHAMPION_LOCK_DATE) {
+    document.getElementById('championSelect').disabled = true;
+    document.getElementById('championLockMsg').style.display = 'block';
+  }
+}
+
+async function saveChampionPick() {
+  if (new Date() >= CHAMPION_LOCK_DATE) {
+    checkChampionLock();
+    return;
+  }
+  
+  const pick = document.getElementById('championSelect').value;
+  await supabaseRequest(`/rest/v1/profiles?id=eq.${currentUser.id}`, {
+    method: 'PATCH',
+    headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ champion_pick: pick })
+  });
+}
+
+// ============================================
+// FUNCIONES UTILITARIAS
+// ============================================
+function calculatePoints(predHome, predAway, actualHome, actualAway) {
+  if (predHome == actualHome && predAway == actualAway) return 5;
+  const predResult = Math.sign(predHome - predAway);
+  const actualResult = Math.sign(actualHome - actualAway);
+  if (predResult === actualResult) return 2;
+  return 0;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('es', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function switchTab(tabName, element) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  element.classList.add('active');
+  document.getElementById(`panel-${tabName}`).classList.add('active');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showError(msg) { const el = document.getElementById('authError'); el.textContent = msg; el.style.display = 'block'; }
+function showSuccess(msg) { const el = document.getElementById('authSuccess'); el.textContent = msg; el.style.display = 'block'; }
+function hideMessages() { document.getElementById('authError').style.display = 'none'; document.getElementById('authSuccess').style.display = 'none'; }
+function showErrorBanner(msg) { const el = document.getElementById('errorBanner'); el.textContent = msg; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 5000); }
+
+// ============================================
+// VERIFICACIÓN DE SESIÓN AL CARGAR
+// ============================================
+(async function init() {
+  accessToken = localStorage.getItem('supabase_token');
+  refreshToken = localStorage.getItem('supabase_refresh_token');
+  const user = localStorage.getItem('supabase_user');
+  
+  if (accessToken && user) {
+    currentUser = JSON.parse(user);
+    const check = await supabaseRequest('/auth/v1/user');
+    if (check && check.id) {
+      currentUser = check;
+      await loadApp();
+    } else {
+      if (refreshToken) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          const recheck = await supabaseRequest('/auth/v1/user');
+          if (recheck && recheck.id) {
+            currentUser = recheck;
+            await loadApp();
+            return;
+          }
+        }
+      }
+      handleLogout();
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
