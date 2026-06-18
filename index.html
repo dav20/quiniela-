@@ -366,14 +366,23 @@
     }
 
     async function saveChampionPick() {
-      const pick = document.getEle[PASSWORD]championSelect').value;
+      var pick = document.getElementById('championSelect').value;
       if (!pick) return;
-      const { error } = await supabase.from('profiles').update({ champion_pick: pick }).eq('id', currentUser.id);
-      if (!error) {
-        document.getEle[PASSWORD]championPicked').textContent = pick;
-        document.getEle[PASSWORD]championLockMsg').style.display = 'block';
-        currentProfile.champion_pick = pick;
+
+      var result = await supabase
+        .from('profiles')
+        .update({ champion_pick: pick })
+        .eq('id', currentUser.id);
+
+      if (result.error) {
+        alert('Error al guardar campeón: ' + result.error.message);
+        return;
       }
+
+      document.getElementById('championPicked').textContent = pick;
+      document.getElementById('championLockMsg').style.display = 'block';
+      currentProfile.champion_pick = pick;
+    }
     }
 
     async function loadMyStats() {
