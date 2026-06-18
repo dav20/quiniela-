@@ -581,6 +581,12 @@ async function handleResetPassword() {
       var result = await supabase.from('predictions').upsert({ user_id: currentUser.id, match_id: matchId, home_score: homeScore, away_score: awayScore }, { onConflict: 'user_id,match_id' }).select();
       if (result.error) { alert('Error al guardar: ' + result.error.message); return; }
       if (result.data && result.data[0]) { predictions[matchId] = result.data[0]; }
+      var toast = document.createElement('div');
+      toast.textContent = '✅ ¡Predicción guardada!';
+      toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,200,100,0.9);color:white;padding:12px 24px;border-radius:8px;font-weight:bold;z-index:9999;';
+      document.body.appendChild(toast);
+      setTimeout(function() { toast.remove(); }, 2000);
+
       var activeBtn = document.querySelector('#groupFilter .group-btn.active');
       var activeGroup = activeBtn ? activeBtn.getAttribute('data-group') : 'all';
       renderMatches(activeGroup);
