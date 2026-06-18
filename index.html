@@ -532,48 +532,56 @@ async function handleResetPassword() {
       renderMatches('all');
     }
 
-    function renderMatches(group) {
-      var filtered = [];
-      for (var i = 0; i < matches.length; i++) {
-        if (group === 'all' || matches[i].group_stage === group) filtered.push(matches[i]);
+function renderMatches(group) {
+  var filtered = [];
+  for (var i = 0; i < matches.length; i++) {
+    if (group === 'all' || matches[i].group_stage === group) filtered.push(matches[i]);
+  }
+  var container = document.getElementById('matchesContent');
+  if (filtered.length === 0) { container.innerHTML = '<div class="loading">No hay partidos</div>'; return; }
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var match = filtered[i];
+    var pred = predictions[match.id];
+    var isFinal = match.home_score !== null && match.away_score !== null;
+    var matchDate = parseMatchDate(match.match_date);
+    var now = new Date();
+    var isLocked = matchDate <= new Date(now.getTime() + 30 * 60 * 1000);
+    var centerContent = '';
+    if (isFinal) {
+      var pointsEarned = 0;
+      if (pred) {
+        if (pred.home_score === match.home_score && pred.away_score === match.away_score) { pointsEarned = 5; }
+        else if (Math.sign(pred.home_score - pred.away_score) === Math.sign(match.home_score - match.away_score)) { pointsEarned = 2; }
       }
-      var container = document.getElementById('matchesContent');
-      if (filtered.length === 0) { container.innerHTML = '<div class="loading">No hay partidos</div>'; return; }
-      var html = '';
-      for (var i = 0; i < filtered.length; i++) {
-        var match = filtered[i];
-        var pred = predictions[match.id];
-        var isFinal = match.home_score !== null && match.away_score !== null;
-        var matchDate = parseMatchDate(match.match_date);
-        var now = new Date();
-        var isLocked = matchDate <= new Date(now.getTime() + 30 * 60 * 1000);
-        var centerContent = '';
-        if (isFinal) {
-          var pointsEarned = 0;
-          if (pred) {
-            if (pred.home_score === match.home_score && pred.away_score === match.away_score) { pointsEarned = 5; }
-            else if (Math.sign(pred.home_score - pred.away_score) === Math.sign(match.home_score - match.away_score)) { pointsEarned = 2; }
-          }
-          centerContent = '<div class="result-display">' + match.home_score + ' - ' + match.away_score + '</div><span class="match-status status-final">FINAL</span>';
-          if (pred) { centerContent += '<div style="font-size:0.7rem;color:rgba(226,232,240,0.4);margin-top:4px;">Tu prediccion: ' + pred.home_score + '-' + pred.away_score + ' (' + (pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts') + ')</div>'; }
-        } else if (isLocked && pred) {
-          centerContent = '<div class="result-display" style="font-size:1.2rem;">' + pred.home_score + ' - ' + pred.away_score + '</div><span class="match-status status-saved">GUARDADA</span><div style="font-size:0.65rem;color:rgba(251,191,36,0.6);margin-top:3px;">Bloqueado 30 min antes</div>';
-        } else if (isLocked && !pred) {
-          centerContent = '<div style="font-size:0.8rem; color:rgba(226,232,240,0.3);">Sin prediccion</div><span class="match-status status-locked">CERRADO</span>';
-        } else {
-          var hVal = pred ? pred.home_score : '';
-          var aVal = pred ? pred.away_score : '';
-          centerContent = '<div class="match-score"><input type="number" min="0" max="20" id="h_' + match.id + '" value="' + hVal + '" placeholder="-"><span class="separator">-</span><input type="number" min="0" max="20" id="a_' + match.id + '" value="' + aVal + '" placeholder="-"></div><button class="save-btn" data-matchid="' + match.id + '">' + (pred ? 'Actualizar' : 'Guardar') + '</button>';
-        }
-        var dateStr = formatMatchDate(match.match_date);
-        html += '<div class="match-card"><div class="match-team"><span class="flag">' + match.home_flag + '</span><span class="name">' + match.home_team + '</span></div><div class="match-center">' + centerContent + '<div class="match-info">' + match.group_stage + ' - ' + dateStr + '</div></div><div class="match-team"><span class="flag">' + match.away_flag + '</span><span class="name">' + match.away_team + '</span></div></div>';
-      }
-      container.innerHTML = html;
-      var saveBtns = container.querySelectorAll('.save-btn');
-      for (var i = 0; i < saveBtns.length; i++) {
-        saveBtns[i].addEventListener('click', function() { savePrediction(this.getAttribute('data-matchid')); });
-      }
+      centerContent = '<div class="result-display">' + match.home_score + ' - ' + match.away_score + '</div><span class="match-status status-final">FINAL</span>';
+      if (pred) { centerContent += '<div style="font-size:0.7rem;color:rgba(226,232,240,0.4);margin-top:4px;">Tu prediccion: ' + pred.home_score + '-' + pred.away_score + ' (' + (pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts') + ')</div>'; }
+    } else if (isLocked && pred) {
+      centerContent = '<div class="result-display" style="font-size:1.2rem;">' + pred.home_score + ' - ' + pred.away_score + '</div><span class="match-status status-saved">GUARDADA</span><div style="font-size:0.65rem;color:rgba(251,191,36,0.6);margin-top:3px;">Bloqueado 30 min antes</div>';
+    } else if (isLocked && !pred) {
+      centerContent = '<div style="font-size:0.8rem; color:rgba(226,232,240,0.3);">Sin prediccion</div><span class="match-status status-locked">CERRADO</span>';
+    } else {
+      var hVal = pred ? pred.home_score : '';
+      var aVal = pred ? pred.away_score : '';
+      centerContent = '<div class="match-score"><input type="number" min="0" max="20" id="h_' + match.id + '" value="' + hVal + '" placeholder="-"><span class="separator">-</span><input type="number" min="0" max="20" id="a_' + match.id + '" value="' + aVal + '" placeholder="-"></div><button class="save-btn" data-matchid="' + match.id + '">' + (pred ? 'Actualizar' : 'Guardar') + '</button>';
     }
+    var dateStr = formatMatchDate(match.match_date);
+    var statusLabel = '';
+    if (isFinal) {
+      statusLabel = '<span style="background:rgba(0,200,100,0.15);color:#00c853;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:6px;">✅ Finalizado</span>';
+    } else if (now >= matchDate) {
+      statusLabel = '<span style="background:rgba(255,200,0,0.15);color:#ffd600;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:6px;">🟢 En juego</span>';
+    } else {
+      statusLabel = '<span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:6px;">⏳ Por jugar</span>';
+    }
+    html += '<div class="match-card"><div class="match-team"><span class="flag">' + match.home_flag + '</span><span class="name">' + match.home_team + '</span></div><div class="match-center">' + centerContent + '<div class="match-info">' + match.group_stage + ' - ' + dateStr + ' ' + statusLabel + '</div></div><div class="match-team"><span class="flag">' + match.away_flag + '</span><span class="name">' + match.away_team + '</span></div></div>';
+  }
+  container.innerHTML = html;
+  var saveBtns = container.querySelectorAll('.save-btn');
+  for (var i = 0; i < saveBtns.length; i++) {
+    saveBtns[i].addEventListener('click', function() { savePrediction(this.getAttribute('data-matchid')); });
+  }
+}
 
     async function savePrediction(matchId) {
       var homeScore = parseInt(document.getElementById('h_' + matchId).value);
