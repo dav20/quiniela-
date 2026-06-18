@@ -419,10 +419,10 @@ supabase.auth.onAuthStateChange(async function(event, session) {
 
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
-      document.getElementById('authTitle').textContent = isLoginMode ? 'Iniciar Sesion' : 'Registrarse';
+      document.getElementById('authTitle').textContent = isLoginMode ? 'Iniciar Sesión' : 'Registrarse';
       document.getElementById('authBtnText').textContent = isLoginMode ? 'Entrar' : 'Crear Cuenta';
       document.getElementById('authToggleText').textContent = isLoginMode ? 'No tenes cuenta?' : 'Ya tenes cuenta?';
-      document.getElementById('authToggleLink').textContent = isLoginMode ? 'Registrate' : 'Inicia sesion';
+      document.getElementById('authToggleLink').textContent = isLoginMode ? 'Registrate' : 'Inicia sesión';
       document.getElementById('authNameField').style.display = isLoginMode ? 'none' : 'block';
       document.getElementById('authError').textContent = '';
     }
