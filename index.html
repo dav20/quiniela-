@@ -555,7 +555,7 @@ function renderMatches(group) {
         else if (Math.sign(pred.home_score - pred.away_score) === Math.sign(match.home_score - match.away_score)) { pointsEarned = 2; }
       }
       centerContent = '<div class="result-display">' + match.home_score + ' - ' + match.away_score + '</div><span class="match-status status-final">FINAL</span>';
-      if (pred) { centerContent += '<div style="font-size:0.7rem;color:rgba(226,232,240,0.4);margin-top:4px;">Tu prediccion: ' + pred.home_score + '-' + pred.away_score + ' (' + (pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts') + ')</div>'; }
+      if (pred) { centerContent += '<div style="font-size:0.7rem;color:rgba(226,232,240,0.4);margin-top:4px;">Tu predicción: ' + pred.home_score + '-' + pred.away_score + ' (' + (pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts') + ')</div>'; }
     } else if (isLocked && pred) {
       centerContent = '<div class="result-display" style="font-size:1.2rem;">' + pred.home_score + ' - ' + pred.away_score + '</div><span class="match-status status-saved">GUARDADA</span><div style="font-size:0.65rem;color:rgba(251,191,36,0.6);margin-top:3px;">Bloqueado 30 min antes</div>';
     } else if (isLocked && !pred) {
