@@ -45,6 +45,7 @@
     .match-status { font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
     .status-final { background: rgba(239,68,68,0.2); color: #f87171; }
     .status-saved { background: rgba(124,58,237,0.2); color: #a78bfa; }
+    .status-locked { background: rgba(251,191,36,0.2); color: #fbbf24; }
     .result-display { font-size: 1.5rem; font-weight: 700; }
     .leaderboard-row { display: flex; align-items: center; padding: 12px 15px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.08); }
     .leaderboard-row.gold { border-color: #fbbf24; background: rgba(251,191,36,0.1); }
@@ -65,12 +66,18 @@
     .scoring-info h4 { margin-bottom: 8px; color: #a78bfa; }
     .scoring-info ul { list-style: none; }
     .scoring-info li { margin-bottom: 4px; }
-    .logout-btn { position: fixed; top: 15px; right: 15px; padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem; cursor: pointer; }
+    .logout-btn { position: fixed; top: 15px; right: 15px; padding: 8px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); font-size: 0.8rem; cursor: pointer; z-index: 100; }
     .logout-btn:hover { background: rgba(239,68,68,0.2); color: #f87171; }
     .loading { text-align: center; padding: 40px; color: rgba(255,255,255,0.5); }
     .save-btn { padding: 8px 16px; border: none; border-radius: 6px; background: #7c3aed; color: #fff; font-size: 0.8rem; font-weight: 600; cursor: pointer; margin-top: 8px; }
     .save-btn:hover { background: #6d28d9; }
-    @media (max-width: 600px) { .match-team { width: 70px; } .match-team .flag { font-size: 1.5rem; } .match-team .name { font-size: 0.65rem; } }
+    @media (max-width: 600px) {
+      .match-team { width: 70px; }
+      .match-team .flag { font-size: 1.5rem; }
+      .match-team .name { font-size: 0.65rem; }
+      .tabs { gap: 3px; padding: 3px; }
+      .tab { padding: 8px 10px; font-size: 0.75rem; }
+    }
   </style>
 </head>
 <body>
@@ -130,7 +137,7 @@
 
       <div id="tab-profile" style="display:none;">
         <div class="card profile-section">
-          <h3>Campeón del Mundo (10 pts)</h3>
+          <h3>Campeon del Mundo (10 pts)</h3>
           <p style="font-size:0.85rem; color:rgba(255,255,255,0.6); margin-bottom:15px;">Elegi quien crees que va a ganar el Mundial</p>
           <select class="champion-select" id="championSelect">
             <option value="">Elegi un equipo...</option>
@@ -184,11 +191,11 @@
             <option value="Uzbekistan">Uzbekistan</option>
           </select>
           <div class="champion-locked" id="championLockMsg" style="display:none;">
-            Tu elección : <strong id="championPicked"></strong>
+            Tu eleccion: <strong id="championPicked"></strong>
           </div>
         </div>
         <div class="card" style="margin-top:15px;">
-          <h3>Mis Estadísticas</h3>
+          <h3>Mis Estadisticas</h3>
           <div id="myStats" style="margin-top:10px; color:rgba(255,255,255,0.7);">Cargando...</div>
         </div>
       </div>
@@ -199,6 +206,7 @@
   <script>
     var SUPABASE_URL = 'https://ztngxhnhbakncgdlusjx.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0bmd4aG5oYmFrbmNnZGx1c2p4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MjU4NzUsImV4cCI6MjA5NzMwMTg3NX0.H6UOcR_ANTd28MIQcp8_jc-Y5_R3EuJjzLkhqJeiGH0';
+
     var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     var currentUser = null;
     var currentProfile = null;
@@ -259,6 +267,27 @@
       await Promise.all([loadMatches(), loadLeaderboard(), loadMyStats()]);
     }
 
+    function parseMatchDate(dateStr) {
+      if (!dateStr) return new Date();
+      var str = String(dateStr);
+      if (str.indexOf('T') === -1 && str.indexOf('+') !== -1) {
+        str = str.replace(' ', 'T');
+        str = str.replace('+00', '+00:00');
+      } else if (str.indexOf('T') === -1 && str.indexOf('Z') === -1 && str.indexOf('+') === -1) {
+        str = str.replace(' ', 'T') + 'Z';
+      }
+      var d = new Date(str);
+      if (!isNaN(d.getTime())) return d;
+      return new Date(dateStr);
+    }
+
+    function formatMatchDate(dateStr) {
+      var date = parseMatchDate(dateStr);
+      var day = date.toLocaleDateString('es', { day: 'numeric', month: 'short' });
+      var time = date.toLocaleTimeString('es', { hour: 'numeric', minute: '2-digit', hour12: true });
+      return day + ' ' + time;
+    }
+
     async function loadMatches() {
       var resp = await supabase.from('matches').select('*').order('match_date', { ascending: true });
       matches = resp.data || [];
@@ -280,7 +309,7 @@
       var btns = filterEl.querySelectorAll('.group-btn');
       for (var i = 0; i < btns.length; i++) {
         btns[i].addEventListener('click', function() {
-          var allBtns = document.querySelectorAll('.group-btn');
+          var allBtns = document.querySelectorAll('#groupFilter .group-btn');
           for (var j = 0; j < allBtns.length; j++) allBtns[j].classList.remove('active');
           this.classList.add('active');
           renderMatches(this.getAttribute('data-group'));
@@ -301,9 +330,9 @@
         var match = filtered[i];
         var pred = predictions[match.id];
         var isFinal = match.home_score !== null && match.away_score !== null;
-        var matchDate = new Date(match.match_date);
+        var matchDate = parseMatchDate(match.match_date);
         var now = new Date();
-        var isLocked = matchDate <= now;
+        var isLocked = matchDate <= new Date(now.getTime() + 30 * 60 * 1000);
         var centerContent = '';
         if (isFinal) {
           var pointsEarned = 0;
@@ -314,15 +343,15 @@
           centerContent = '<div class="result-display">' + match.home_score + ' - ' + match.away_score + '</div><span class="match-status status-final">FINAL</span>';
           if (pred) { centerContent += '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Tu prediccion: ' + pred.home_score + '-' + pred.away_score + ' (' + (pointsEarned > 0 ? '+' + pointsEarned + ' pts' : '0 pts') + ')</div>'; }
         } else if (isLocked && pred) {
-          centerContent = '<div class="result-display" style="font-size:1.2rem;">' + pred.home_score + ' - ' + pred.away_score + '</div><span class="match-status status-saved">GUARDADA</span>';
+          centerContent = '<div class="result-display" style="font-size:1.2rem;">' + pred.home_score + ' - ' + pred.away_score + '</div><span class="match-status status-saved">GUARDADA</span><div style="font-size:0.65rem;color:rgba(251,191,36,0.7);">Bloqueado 30 min antes</div>';
         } else if (isLocked && !pred) {
-          centerContent = '<div style="font-size:0.8rem; color:rgba(255,255,255,0.4);">Sin prediccion</div><span class="match-status status-final">CERRADO</span>';
+          centerContent = '<div style="font-size:0.8rem; color:rgba(255,255,255,0.4);">Sin prediccion</div><span class="match-status status-locked">CERRADO</span>';
         } else {
           var hVal = pred ? pred.home_score : '';
           var aVal = pred ? pred.away_score : '';
           centerContent = '<div class="match-score"><input type="number" min="0" max="20" id="h_' + match.id + '" value="' + hVal + '" placeholder="-"><span class="separator">-</span><input type="number" min="0" max="20" id="a_' + match.id + '" value="' + aVal + '" placeholder="-"></div><button class="save-btn" data-matchid="' + match.id + '">' + (pred ? 'Actualizar' : 'Guardar') + '</button>';
         }
-        var dateStr = matchDate.toLocaleDateString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        var dateStr = formatMatchDate(match.match_date);
         html += '<div class="match-card"><div class="match-team"><span class="flag">' + match.home_flag + '</span><span class="name">' + match.home_team + '</span></div><div class="match-center">' + centerContent + '<div class="match-info">' + match.group_stage + ' - ' + dateStr + '</div></div><div class="match-team"><span class="flag">' + match.away_flag + '</span><span class="name">' + match.away_team + '</span></div></div>';
       }
       container.innerHTML = html;
@@ -339,7 +368,7 @@
       var result = await supabase.from('predictions').upsert({ user_id: currentUser.id, match_id: matchId, home_score: homeScore, away_score: awayScore }, { onConflict: 'user_id,match_id' }).select();
       if (result.error) { alert('Error al guardar: ' + result.error.message); return; }
       if (result.data && result.data[0]) { predictions[matchId] = result.data[0]; }
-      var activeBtn = document.querySelector('.group-btn.active');
+      var activeBtn = document.querySelector('#groupFilter .group-btn.active');
       var activeGroup = activeBtn ? activeBtn.getAttribute('data-group') : 'all';
       renderMatches(activeGroup);
     }
