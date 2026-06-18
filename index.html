@@ -320,20 +320,34 @@
     }
 
     async function savePrediction(matchId) {
-      const homeScore = parseInt(document.getEle[PASSWORD]h_' + matchId).value);
-      const awayScore = parseInt(document.getEle[PASSWORD]a_' + matchId).value);
-      if (isNaN(homeScore) || isNaN(awayScore) || homeScore < 0 || awayScore < 0) { alert('Ingresá marcadores válidos (números >= 0)'); return; }
-      const existing = predictions[matchId];
-      let result;
-      if (existing) {
-        result = await supabase.from('predictions').update({ home_score: homeScore, away_score: awayScore }).eq('id', existing.id);
-      } else {
-        result = await supabase.from('predictions').insert({ user_id: currentUser.id, match_id: matchId, home_score: homeScore, away_score: awayScore });
+      var homeScore = parseInt(document.getElementById('h_' + matchId).value);
+      var awayScore = parseInt(document.getElementById('a_' + matchId).value);
+      if (isNaN(homeScore) || isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
+        alert('Ingresá marcadores válidos (números >= 0)');
+        return;
       }
-      if (result.error) { alert('Error al guardar: ' + result.error.message); return; }
-      predictions[matchId] = { match_id: matchId, home_score: homeScore, away_score: awayScore, id: existing?.id || 'new' };
-      const activeBtn = document.querySelector('.group-btn.active');
-      const activeGroup = activeBtn?.textContent === 'Todos' ? 'all' : 'Grupo ' + activeBtn?.textContent;
+
+      var result = await supabase
+        .from('predictions')
+        .upsert(
+          { user_id: currentUser.id, match_id: matchId, home_score: homeScore, away_score: awayScore },
+          { onConflict: 'user_id,match_id' }
+        )
+        .select();
+
+      if (result.error) {
+        alert('Error al guardar: ' + result.error.message);
+        return;
+      }
+
+      // Guardar con el ID real de Supabase
+      if (result.data && result.data[0]) {
+        predictions[matchId] = result.data[0];
+      }
+
+      // Re-render
+      var activeBtn = document.querySelector('.group-btn.active');
+      var activeGroup = activeBtn && activeBtn.textContent === 'Todos' ? 'all' : 'Grupo ' + (activeBtn ? activeBtn.textContent : '');
       renderMatches(activeGroup);
     }
 
