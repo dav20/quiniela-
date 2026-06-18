@@ -573,13 +573,13 @@ function renderMatches(group) {
     var dateStr = formatMatchDate(match.match_date);
     var statusLabel = '';
     if (isFinal) {
-      statusLabel = '<span style="background:rgba(0,200,100,0.15);color:#00c853;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:6px;">✅ Finalizado</span>';
+      statusLabel = '<div style="background:rgba(0,200,100,0.15);color:#00c853;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:bold;margin-top:4px;display:inline-block;">✅ Finalizado</div>';
     } else if (now >= matchDate) {
-      statusLabel = '<span style="background:rgba(255,200,0,0.15);color:#ffd600;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:6px;">🟢 En juego</span>';
+      statusLabel = '<div style="background:rgba(255,200,0,0.15);color:#ffd600;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:bold;margin-top:4px;display:inline-block;">🟢 En juego</div>';
     } else {
-      statusLabel = '<span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:bold;margin-left:6px;">⏳ Por jugar</span>';
+      statusLabel = '<div style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:bold;margin-top:4px;display:inline-block;">⏳ Por jugar</div>';
     }
-    html += '<div class="match-card"><div class="match-team"><span class="flag">' + match.home_flag + '</span><span class="name">' + match.home_team + '</span></div><div class="match-center">' + centerContent + '<div class="match-info">' + match.group_stage + ' - ' + dateStr + ' ' + statusLabel + '</div></div><div class="match-team"><span class="flag">' + match.away_flag + '</span><span class="name">' + match.away_team + '</span></div></div>';
+    html += '<div class="match-card"><div class="match-team"><span class="flag">' + match.home_flag + '</span><span class="name">' + match.home_team + '</span></div><div class="match-center">' + centerContent + '<div class="match-info">' + match.group_stage + ' - ' + dateStr + '<br>' + statusLabel + '</div></div><div class="match-team"><span class="flag">' + match.away_flag + '</span><span class="name">' + match.away_team + '</span></div></div>';
   }
   container.innerHTML = html;
   var saveBtns = container.querySelectorAll('.save-btn');
