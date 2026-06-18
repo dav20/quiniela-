@@ -425,6 +425,22 @@
       } catch (err) { errorEl.textContent = err.message || 'Error de autenticacion'; }
     }
 
+async function handleResetPassword() {
+  var email = document.getElementById('email').value;
+  if (!email) {
+    alert('Escribí tu email primero en el campo de arriba');
+    return;
+  }
+  var { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  if (error) {
+    alert('Error: ' + error.message);
+  } else {
+    alert('¡Listo! Revisá tu email para el link de recuperación.');
+  }
+}
+    
     async function logout() {
       await supabase.auth.signOut();
       currentUser = null;
