@@ -277,6 +277,7 @@
         <button class="btn btn-primary" id="authBtn">
           <span id="authBtnText">Entrar</span>
         </button>
+        <button id="resetBtn" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:0.85rem;margin-top:10px;text-decoration:underline;">¿Olvidaste tu contraseña?</button>
         <div class="auth-toggle">
           <span id="authToggleText">No tenes cuenta?</span>
           <a id="authToggleLink">Registrate</a>
@@ -634,6 +635,22 @@ async function handleResetPassword() {
     }
 
     document.getElementById('authBtn').addEventListener('click', handleAuth);
+    document.getElementById('resetBtn').addEventListener('click', async function() {
+  var email = document.getElementById('authEmail').value.trim();
+  if (!email) {
+    alert('Escribí tu email primero en el campo de arriba');
+    return;
+  }
+  var { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
+  if (error) {
+    alert('Error: ' + error.message);
+  } else {
+    alert('¡Listo! Revisá tu email para el link de recuperación.');
+  }
+});
+
     document.getElementById('authToggleLink').addEventListener('click', toggleAuthMode);
     document.getElementById('logoutBtn').addEventListener('click', logout);
     document.getElementById('tabLeaderboard').addEventListener('click', function() { switchTab('leaderboard'); });
