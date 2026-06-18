@@ -395,6 +395,22 @@
     var predictions = {};
     var isLoginMode = true;
 
+    // Detectar cuando el usuario vuelve del link de recuperación
+supabase.auth.onAuthStateChange(async function(event, session) {
+  if (event === 'PASSWORD_RECOVERY') {
+    var newPassword = prompt('Escribí tu nueva contraseña:');
+    if (newPassword) {
+      var { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        alert('¡Contraseña actualizada! Ya podés iniciar sesión.');
+        window.location.reload();
+      }
+    }
+  }
+});
+
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
       document.getElementById('authTitle').textContent = isLoginMode ? 'Iniciar Sesion' : 'Registrarse';
