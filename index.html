@@ -270,7 +270,7 @@
     <div id="authScreen">
       <div class="header">
         <h1>Quiniela Mundial 2026</h1>
-        <p>Predeci los resultados y competi</p>
+        <p>Predecí  los resultados y competí </p>
       </div>
       <div class="auth-container">
         <h2 id="authTitle">Iniciar sesión</h2>
@@ -421,7 +421,7 @@ supabase.auth.onAuthStateChange(async function(event, session) {
       isLoginMode = !isLoginMode;
       document.getElementById('authTitle').textContent = isLoginMode ? 'Iniciar Sesión' : 'Registrarse';
       document.getElementById('authBtnText').textContent = isLoginMode ? 'Entrar' : 'Crear Cuenta';
-      document.getElementById('authToggleText').textContent = isLoginMode ? 'No tenes cuenta?' : 'Ya tenes cuenta?';
+      document.getElementById('authToggleText').textContent = isLoginMode ? 'No tenés cuenta?' : 'Ya tenés cuenta?';
       document.getElementById('authToggleLink').textContent = isLoginMode ? 'Registrate' : 'Inicia sesión';
       document.getElementById('authNameField').style.display = isLoginMode ? 'none' : 'block';
       document.getElementById('authError').textContent = '';
